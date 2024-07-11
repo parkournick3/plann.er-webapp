@@ -1,9 +1,12 @@
 import { CalendarIcon, MapPinIcon, Settings2Icon } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import CreateActivityModal from "./create-activity-modal";
 import ImportantLinks from "./important-links";
 import Guests from "./guests";
 import Activities from "./activities";
+import { useParams } from "react-router-dom";
+import { format } from "date-fns";
+import { api } from "../../lib/axios";
 
 const TripDetailsPage = () => {
   const [isCreateActivityModalOpen, setIsCreateActivityModalOpen] =
@@ -19,18 +22,40 @@ const TripDetailsPage = () => {
     alert("criado!");
   };
 
+  const [trip, setTrip] = useState<{
+    id: string;
+    is_confirmed: boolean;
+    destination: string;
+    starts_at: Date;
+    ends_at: Date;
+  }>();
+
+  const { tripId } = useParams();
+
+  useEffect(() => {
+    api.get(`/trips/${tripId}`).then((response) => {
+      setTrip(response.data.trip);
+    });
+  }, [tripId]);
+
+  const displayedDate = trip
+    ? format(trip.starts_at, "d' de 'LLL")
+        .concat(" até ")
+        .concat(format(trip.ends_at, "d' de 'LLL"))
+    : null;
+
   return (
     <div className="max-w-6xl px-6 py-10 mx-auto space-y-8">
       <div className="px-4 h-16 rounded-xl shadow-shape bg-zinc-900 items-center justify-between flex">
         <div className="flex items-center gap-2">
           <MapPinIcon className="size-5 text-zinc-400" />
-          <span className="text-zinc-100">Minas Gerais, Brasil</span>
+          <span className="text-zinc-100">{trip?.destination}</span>
         </div>
 
         <div className="flex gap-5 items-center">
           <div className="flex items-center gap-2">
             <CalendarIcon className="size-5 text-zinc-400" />
-            <span className="text-zinc-100">17 a 23 de Agosto</span>
+            <span className="text-zinc-100">{displayedDate}</span>
           </div>
 
           <div className="w-px h-6 bg-zinc-800" />
