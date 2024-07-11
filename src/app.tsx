@@ -1,17 +1,51 @@
 import {
   ArrowRightIcon,
+  AtSignIcon,
   CalendarIcon,
   MapPinIcon,
+  PlusIcon,
   Settings2Icon,
   UserRoundPlusIcon,
+  XIcon,
 } from "lucide-react";
 import { useState } from "react";
 
 const App = () => {
   const [isGuestInputOpen, setIsGuestInputOpen] = useState(false);
+  const [isGuestModalOpen, setIsGuestModalOpen] = useState(false);
+  const [emailsToInvite, setEmailsToInvite] = useState(["asdasd"]);
 
   const toggleGuestsInput = () => {
     setIsGuestInputOpen(!isGuestInputOpen);
+  };
+
+  const toggleGuestsModal = () => {
+    setIsGuestModalOpen(!isGuestModalOpen);
+  };
+
+  const addEmailToInvite = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const data = new FormData(e.currentTarget);
+    const email = data.get("email")?.toString();
+
+    if (!email) {
+      return;
+    }
+
+    if (emailsToInvite.includes(email)) {
+      return;
+    }
+
+    setEmailsToInvite([...emailsToInvite, email.toLocaleLowerCase()]);
+
+    e.currentTarget.reset();
+  };
+
+  const removeEmailToInvite = (email: string) => {
+    setEmailsToInvite((prev) =>
+      prev.filter((e) => e !== email.toLocaleLowerCase())
+    );
   };
 
   return (
@@ -69,14 +103,16 @@ const App = () => {
 
           {isGuestInputOpen && (
             <div className="h-16 bg-zinc-900 px-4 rounded-xl flex items-center shadow-shape gap-3">
-              <div className="flex items-center gap-2 flex-1">
+              <button
+                type="button"
+                onClick={toggleGuestsModal}
+                className="flex items-center gap-2 flex-1"
+              >
                 <UserRoundPlusIcon className="size-5 text-zinc-400" />
-                <input
-                  className="w-full min-w-20 bg-transparent text-lg placeholder-zinc-400 outline-none flex-1"
-                  type="text"
-                  placeholder="Quem estará na viagem?"
-                />
-              </div>
+                <span className="w-full min-w-20 bg-transparent text-lg text-zinc-400 text-start">
+                  Quem estará na viagem?
+                </span>
+              </button>
 
               <div className="w-px h-6 bg-zinc-800" />
 
@@ -101,6 +137,69 @@ const App = () => {
           .
         </p>
       </div>
+
+      {isGuestModalOpen && (
+        <div className="inset-0 fixed bg-black/60 flex items-center justify-center">
+          <div className="w-[640px] rounded-xl py-5 px-6 shadow-shape bg-zinc-900 space-y-5">
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <h2>Selecionar convidados</h2>
+                <button type="button" onClick={toggleGuestsModal}>
+                  <XIcon className="size-5 text-zinc-400" />
+                </button>
+              </div>
+              <p className="text-sm text-zinc-400">
+                Os convidados receberão e-mails para confirmar a participação na
+                viagem.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              {emailsToInvite.map((email) => {
+                return (
+                  <div
+                    key={email}
+                    className="py-1.5 px-2.5 bg-zinc-800 rounded-md flex items-center gap-2"
+                  >
+                    <span className="text-zinc-300">{email}</span>
+                    <button
+                      onClick={() => removeEmailToInvite(email)}
+                      type="button"
+                    >
+                      <XIcon className="size-4" />
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="w-full h-px bg-zinc-800" />
+
+            <form
+              onSubmit={addEmailToInvite}
+              className="p-2.5 bg-zinc-950 border border-zinc-800 rounded-lg flex items-center gap-2"
+            >
+              <div className="flex flex-1 gap-2 px-2 items-center">
+                <AtSignIcon className="text-zinc-400" />
+                <input
+                  className="bg-transparent text-lg placeholder-zinc-400 w-full outline-none"
+                  type="text"
+                  name="email"
+                  placeholder="Digite o email do convidado"
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="hover:bg-lime-400 min-w-fit flex items-center gap-2 bg-lime-300 text-lime-950 rounded-lg px-5 py-2 font-medium"
+              >
+                Convidar
+                <PlusIcon className="size-5" />
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
